@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.android)
+    id("jacoco")
 }
 
 android {
@@ -104,4 +105,33 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.hilt.android.testing)
     kspAndroidTest(libs.hilt.compiler)
+}
+
+tasks.withType<JacocoReport> {
+    dependsOn("testDebugUnitTest")
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+
+    sourceDirectories.setFrom(files("src/main/java"))
+    classDirectories.setFrom(
+        fileTree("build/tmp/kotlin-classes/debug") {
+            exclude(
+                "**/R.class",
+                "**/R\$*.class",
+                "**/BuildConfig.*",
+                "**/Manifest*.*",
+                "**/*_Factory.*",
+                "**/*_MembersInjector.*",
+                "**/Hilt_*.*",
+                "**/Dagger*Component*.*",
+                "**/*Module_*Factory.*"
+            )
+        }
+    )
+    executionData.setFrom(fileTree("build") {
+        include("jacoco/testDebugUnitTest.exec")
+    })
 }

@@ -61,6 +61,10 @@ Single source of truth for all data operations. Methods:
 - `getFavorites()` / `isFavorite()` / `toggleFavorite()` -- Room-backed favorites
 - `getPortfolioItems()` / `addHolding()` / `removeHolding()` -- Room-backed portfolio
 
+#### Data Mapping
+
+`PairData.toCryptoCurrency()` is a top-level `internal` extension function that converts DexScreener API models to domain models. Extracted as `internal` (instead of `private`) to enable unit testing via `DataMappingTest`.
+
 #### Remote Data (`data/remote/`)
 
 - `DexScreenerApi` -- Retrofit interface for DexScreener API

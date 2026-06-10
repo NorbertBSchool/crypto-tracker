@@ -94,6 +94,31 @@ class PortfolioViewModelTest {
     }
 
     @Test
+    fun `loadPortfolio zero cost items shows zero PNL percent`() = runTest {
+        val zeroCostItem = PortfolioItem(
+            pairAddress = "0x999",
+            chainId = "ethereum",
+            dexId = "uniswap",
+            tokenSymbol = "FREE",
+            tokenName = "Free Token",
+            quoteTokenSymbol = "WETH",
+            buyPriceUsd = 0.0,
+            quantity = 100.0,
+            currentPriceUsd = 0.5,
+            imageUrl = null
+        )
+        whenever(repository.getPortfolioItems()).thenReturn(listOf(zeroCostItem))
+
+        val viewModel = PortfolioViewModel(repository)
+        advanceUntilIdle()
+
+        assertEquals(50.0, viewModel.uiState.value.totalValue, 0.01)
+        assertEquals(0.0, viewModel.uiState.value.totalCost, 0.01)
+        assertEquals(50.0, viewModel.uiState.value.totalPnlUsd, 0.01)
+        assertEquals(0.0, viewModel.uiState.value.totalPnlPercent, 0.01)
+    }
+
+    @Test
     fun `removeFromPortfolio calls repository and reloads`() = runTest {
         whenever(repository.getPortfolioItems()).thenReturn(emptyList())
 

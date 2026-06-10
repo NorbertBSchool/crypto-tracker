@@ -62,7 +62,7 @@
 | Mockito Core | 5.11.0 | Mocking framework |
 | Mockito Kotlin | 5.3.1 | Kotlin-friendly Mockito extensions |
 | Turbine | 1.1.0 | Flow testing utility |
-| Espresso Core | 3.7.0 | UI testing framework |
+| Espresso Core | 3.7.0 | UI testing framework (declared, not actively used) |
 | AndroidX JUnit | 1.3.0 | AndroidX test extensions |
 | Compose UI Test JUnit4 | (via BOM) | Compose testing |
 | Compose UI Test Manifest | (via BOM) | Compose test manifest |

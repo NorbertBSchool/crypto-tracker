@@ -141,28 +141,6 @@ class CryptoRepository @Inject constructor(
             }
         }
 
-    private fun PairData.toCryptoCurrency(): CryptoCurrency {
-        return CryptoCurrency(
-            pairAddress = pairAddress,
-            chainId = chainId,
-            dexId = dexId,
-            baseTokenSymbol = baseToken.symbol,
-            baseTokenName = baseToken.name,
-            baseTokenAddress = baseToken.address,
-            quoteTokenSymbol = quoteToken.symbol,
-            priceUsd = priceUsd ?: "0",
-            priceNative = priceNative,
-            priceChange24h = priceChange?.get("h24"),
-            priceChange1h = priceChange?.get("h1"),
-            volume24h = volume?.get("h24"),
-            liquidityUsd = liquidity?.usd,
-            fdv = fdv,
-            marketCap = marketCap,
-            url = url,
-            imageUrl = info?.imageUrl
-        )
-    }
-
     fun getHoldingsFlow(): Flow<List<HoldingEntity>> = holdingDao.getAllHoldings()
 
     fun isHolding(pairAddress: String): Flow<Boolean> = holdingDao.isInPortfolio(pairAddress)
@@ -211,4 +189,26 @@ class CryptoRepository @Inject constructor(
             }.mapNotNull { it.await() }
         }
     }
+}
+
+internal fun PairData.toCryptoCurrency(): CryptoCurrency {
+    return CryptoCurrency(
+        pairAddress = pairAddress,
+        chainId = chainId,
+        dexId = dexId,
+        baseTokenSymbol = baseToken.symbol,
+        baseTokenName = baseToken.name,
+        baseTokenAddress = baseToken.address,
+        quoteTokenSymbol = quoteToken.symbol,
+        priceUsd = priceUsd ?: "0",
+        priceNative = priceNative,
+        priceChange24h = priceChange?.get("h24"),
+        priceChange1h = priceChange?.get("h1"),
+        volume24h = volume?.get("h24"),
+        liquidityUsd = liquidity?.usd,
+        fdv = fdv,
+        marketCap = marketCap,
+        url = url,
+        imageUrl = info?.imageUrl
+    )
 }

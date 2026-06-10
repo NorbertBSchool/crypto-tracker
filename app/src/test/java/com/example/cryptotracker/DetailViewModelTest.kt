@@ -19,7 +19,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -132,5 +134,47 @@ class DetailViewModelTest {
         advanceUntilIdle()
 
         verify(repository).toggleFavorite(testCurrency)
+    }
+
+    @Test
+    fun `addToPortfolio calls repository addHolding`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.addToPortfolio(buyPriceUsd = 1.5, quantity = 50.0)
+        advanceUntilIdle()
+
+        verify(repository).addHolding(testCurrency, 1.5, 50.0)
+    }
+
+    @Test
+    fun `addToPortfolio does nothing when crypto is null`() = runTest {
+        val savedStateHandle = SavedStateHandle(
+            mapOf("pairAddress" to "0x999", "chainId" to "ethereum")
+        )
+        whenever(repository.getPairData("ethereum", "0x999")).thenReturn(
+            Result.failure(Exception("Not found"))
+        )
+        whenever(repository.isFavorite("0x999")).thenReturn(flowOf(false))
+        whenever(repository.isHolding("0x999")).thenReturn(flowOf(false))
+
+        val viewModel = DetailViewModel(savedStateHandle, repository)
+        advanceUntilIdle()
+
+        viewModel.addToPortfolio(buyPriceUsd = 1.0, quantity = 10.0)
+        advanceUntilIdle()
+
+        verify(repository, never()).addHolding(any(), any(), any())
+    }
+
+    @Test
+    fun `removeFromPortfolio calls repository removeHolding`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.removeFromPortfolio()
+        advanceUntilIdle()
+
+        verify(repository).removeHolding("0x123")
     }
 }

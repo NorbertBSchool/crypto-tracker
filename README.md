@@ -66,33 +66,43 @@ Uses [DexScreener API](https://docs.dexscreener.com/api/reference):
 ## Testing
 
 ### Unit Tests (JUnit 4 + Mockito)
-~20 tests total, all with mocked repository for isolation:
+35 tests total, all with mocked repository for isolation:
 
 | Test Class | Tests | Coverage |
 |---|---|---|
 | `HomeViewModelTest` | 3 | loadCryptoData: success, empty result, exception |
 | `SearchViewModelTest` | 5 | initial state, query update, blank query, search success, search failure |
-| `DetailViewModelTest` | 4 | loadDetails success, loadDetails failure, observeFavorite, toggleFavorite |
+| `DetailViewModelTest` | 7 | loadDetails success/failure, observeFavorite, toggleFavorite, addToPortfolio success/null, removeFromPortfolio |
 | `FavoritesViewModelTest` | 3 | loadFavorites success, loadFavorites empty, loadFavorites exception |
-| `PortfolioViewModelTest` | 3+ | loadPortfolio success, loadPortfolio empty, removeFromPortfolio |
+| `PortfolioViewModelTest` | 5 | loadPortfolio success, empty, zero-cost PNL, exception, removeFromPortfolio |
+| `PortfolioItemTest` | 6 | totalCost, currentValue, pnlUsd, pnlPercent (gain, loss, zero-cost guard) |
+| `DataMappingTest` | 5 | PairData.toCryptoCurrency() mapping (basic fields, nested maps, nullables, liquidity, imageUrl) |
+| `ExampleUnitTest` | 1 | Boilerplate placeholder |
 
-### Instrumented Tests (Compose Testing + Espresso)
-5 tests with `@HiltAndroidTest` and `createComposeRule()`:
+### Instrumented Tests (Compose Testing v2)
+6 tests using `createComposeRule()` (v2) with a test Scaffold that mirrors production navigation:
 
 | Test | Coverage |
 |---|---|
 | `appLaunches` | App starts and shows "CryptoTracker" title |
-| `bottomNav_showsAllTabs` | Home, Search, Portfolio, Favorites tabs visible |
-| `navigateToSearch_showsSearchBar` | Search screen displays search input |
-| `navigateToFavorites_showsTitle` | Favorites screen shows empty state |
+| `bottomNav_showsAllTabs` | Home, Search, Favorites tabs visible |
+| `navigateToSearch_showsSearchBar` | Search tab navigates to search content |
+| `navigateToFavorites_showsTitle` | Favorites tab shows empty state |
 | `navigateToSearch_thenHome_showsCryptoTracker` | Navigation round-trip works |
+
+### Code Coverage (JaCoCo)
+```bash
+./gradlew jacocoTestReport
+```
 
 ### TDD Approach
 Tests were written alongside feature implementation (RED -> GREEN -> REFACTOR):
 1. **ViewModel tests** define expected state transitions (loading -> success/error) before UI is built
 2. **Mockito** isolates business logic from network/database dependencies
-3. **Compose tests** verify navigation and screen rendering without real API calls
-4. Auto-refresh features designed with testability in mind (init-only load, LaunchedEffect triggers refresh loop)
+3. **Data mapping tests** verify JSON-to-domain model conversion (`PairData.toCryptoCurrency()`)
+4. **Domain model tests** verify computed properties (P&L calculations, zero-cost guards)
+5. **Compose tests** verify navigation and screen rendering without real API calls
+6. Auto-refresh features designed with testability in mind (init-only load, LaunchedEffect triggers refresh loop)
 
 See [Testing Documentation](docs/TESTING.md) for detailed TDD analysis.
 
@@ -116,7 +126,7 @@ See [Testing Documentation](docs/TESTING.md) for detailed TDD analysis.
 | Mockito | 5.11.0 | Mocking |
 | Mockito-Kotlin | 5.3.1 | Kotlin Mockito extensions |
 | Turbine | 1.1.0 | Flow testing |
-| Espresso | 3.7.0 | UI testing |
+| JaCoCo | (built-in) | Code coverage reports |
 
 ## Project Structure
 
