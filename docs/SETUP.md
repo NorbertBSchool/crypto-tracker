@@ -99,3 +99,32 @@ adb uninstall com.example.cryptotracker
 ```
 
 Then reinstall. This clears the old database schema.
+
+## Continuous Integration
+
+Two GitHub Actions workflows are configured in `.github/workflows/`:
+
+### Unit Tests (`test.yml`)
+
+- **Triggers:** Every push + every PR to `main`
+- **Runs:** `./gradlew testDebugUnitTest` (35 JUnit tests, no emulator needed)
+- **Environment:** Ubuntu, JDK 17
+- **Artifacts:** Uploads test reports on failure
+
+### Release APK (`release.yml`)
+
+- **Triggers:** Push of a version tag (e.g. `v1.0.0`, `v2.1.3`)
+- **Builds:** Debug APK (`assembleDebug`)
+- **Publishes:** GitHub Release with APK attached + auto-generated release notes
+
+### Creating a Release
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+### Notes
+
+- Release builds use the debug signing key since no `signingConfig` is configured for the `release` build type
+- For properly signed release APKs, add a `signingConfig` block to `app/build.gradle.kts` and store the keystore as a GitHub Actions secret

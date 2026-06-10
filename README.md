@@ -161,6 +161,29 @@ app/src/main/java/com/example/cryptotracker/
 
 Or open in Android Studio and click Run.
 
+## Continuous Integration
+
+Two GitHub Actions workflows are configured:
+
+### Unit Tests (`.github/workflows/test.yml`)
+- **Triggers:** Every push, every PR to `main`
+- **Runs:** `./gradlew testDebugUnitTest` (35 JUnit tests)
+- **No emulator needed** -- lightweight, runs on Ubuntu with JDK 17
+
+### Release APK (`.github/workflows/release.yml`)
+- **Triggers:** Push of a version tag (e.g. `v1.0.0`)
+- **Builds:** Debug APK (no release signing configured)
+- **Creates:** GitHub Release with APK attached + auto-generated release notes
+
+### How to Create a Release
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+This triggers the release workflow, which builds the APK and publishes it on the GitHub Releases page.
+
 ## Author
 
 Created by **Nort**
