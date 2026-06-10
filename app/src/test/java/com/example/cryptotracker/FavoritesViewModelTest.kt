@@ -5,6 +5,7 @@ import com.example.cryptotracker.domain.model.CryptoCurrency
 import com.example.cryptotracker.ui.favorites.FavoritesViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -30,6 +31,7 @@ class FavoritesViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         repository = mock()
+        whenever(repository.getFavorites()).thenReturn(flowOf(emptyList()))
     }
 
     @After

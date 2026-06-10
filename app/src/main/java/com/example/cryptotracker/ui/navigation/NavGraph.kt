@@ -20,6 +20,7 @@ import androidx.navigation.navArgument
 import com.example.cryptotracker.ui.detail.DetailScreen
 import com.example.cryptotracker.ui.favorites.FavoritesScreen
 import com.example.cryptotracker.ui.home.HomeScreen
+import com.example.cryptotracker.ui.portfolio.PortfolioScreen
 import com.example.cryptotracker.ui.search.SearchScreen
 
 @Composable
@@ -77,6 +78,10 @@ fun CryptoTrackerNavGraph() {
                         )
                     }
                 )
+            }
+
+            composable(Screen.Portfolio.route) {
+                PortfolioScreen()
             }
 
             composable(Screen.Favorites.route) {

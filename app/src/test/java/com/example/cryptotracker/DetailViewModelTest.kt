@@ -68,6 +68,7 @@ class DetailViewModelTest {
         )
         whenever(repository.getPairData("ethereum", "0x123")).thenReturn(Result.success(testCurrency))
         whenever(repository.isFavorite("0x123")).thenReturn(flowOf(false))
+        whenever(repository.isHolding("0x123")).thenReturn(flowOf(false))
         return DetailViewModel(savedStateHandle, repository)
     }
 
@@ -94,6 +95,7 @@ class DetailViewModelTest {
             Result.failure(Exception("Pair not found"))
         )
         whenever(repository.isFavorite("0x999")).thenReturn(flowOf(false))
+        whenever(repository.isHolding("0x999")).thenReturn(flowOf(false))
 
         val viewModel = DetailViewModel(savedStateHandle, repository)
         advanceUntilIdle()
@@ -113,6 +115,7 @@ class DetailViewModelTest {
         )
         whenever(repository.getPairData("ethereum", "0x123")).thenReturn(Result.success(testCurrency))
         whenever(repository.isFavorite("0x123")).thenReturn(flowOf(true))
+        whenever(repository.isHolding("0x123")).thenReturn(flowOf(false))
 
         val viewModel = DetailViewModel(savedStateHandle, repository)
         advanceUntilIdle()

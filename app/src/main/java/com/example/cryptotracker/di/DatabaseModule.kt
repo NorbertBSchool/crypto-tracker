@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.example.cryptotracker.data.local.FavoriteDao
 import com.example.cryptotracker.data.local.FavoriteDatabase
+import com.example.cryptotracker.data.local.HoldingDao
+import com.example.cryptotracker.data.local.MIGRATION_1_2
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,12 +24,18 @@ object DatabaseModule {
             context,
             FavoriteDatabase::class.java,
             "favorites.db"
-        ).build()
+        ).addMigrations(MIGRATION_1_2).build()
     }
 
     @Provides
     @Singleton
     fun provideFavoriteDao(database: FavoriteDatabase): FavoriteDao {
         return database.favoriteDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideHoldingDao(database: FavoriteDatabase): HoldingDao {
+        return database.holdingDao()
     }
 }

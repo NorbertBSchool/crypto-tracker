@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,6 +35,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -42,6 +44,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,8 +57,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.example.cryptotracker.ui.portfolio.AddHoldingSheet
 
-@SuppressLint("SetJavaScriptEnabled")
+@SuppressLint("SetJavaScriptEnabled", "DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
@@ -62,6 +68,7 @@ fun DetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    var showAddHoldingSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.startAutoRefresh()
@@ -85,6 +92,13 @@ fun DetailScreen(
                             imageVector = if (uiState.isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = "Toggle favorite",
                             tint = if (uiState.isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    IconButton(onClick = { showAddHoldingSheet = true }) {
+                        Icon(
+                            imageVector = Icons.Default.AccountBalanceWallet,
+                            contentDescription = "Add to Portfolio",
+                            tint = if (uiState.isInPortfolio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
@@ -174,6 +188,22 @@ fun DetailScreen(
                             )
                         }
                     }
+
+                    OutlinedButton(
+                        onClick = { showAddHoldingSheet = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccountBalanceWallet,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = if (uiState.isInPortfolio) "In Portfolio — Tap to Update" else "Add to Portfolio"
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Spacer(modifier = Modifier.height(24.dp))
 
@@ -305,6 +335,19 @@ fun DetailScreen(
                 }
             }
         }
+    }
+
+    if (showAddHoldingSheet && uiState.crypto != null) {
+        AddHoldingSheet(
+            tokenSymbol = uiState.crypto!!.baseTokenSymbol,
+            tokenName = uiState.crypto!!.baseTokenName,
+            currentPriceUsd = uiState.crypto!!.priceUsd,
+            onDismiss = { showAddHoldingSheet = false },
+            onConfirm = { buyPrice, quantity ->
+                viewModel.addToPortfolio(buyPrice, quantity)
+                showAddHoldingSheet = false
+            }
+        )
     }
 }
 

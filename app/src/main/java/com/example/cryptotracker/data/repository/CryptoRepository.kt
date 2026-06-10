@@ -2,9 +2,12 @@ package com.example.cryptotracker.data.repository
 
 import com.example.cryptotracker.data.local.FavoriteDao
 import com.example.cryptotracker.data.local.FavoriteEntity
+import com.example.cryptotracker.data.local.HoldingDao
+import com.example.cryptotracker.data.local.HoldingEntity
 import com.example.cryptotracker.data.remote.DexScreenerApi
 import com.example.cryptotracker.data.remote.model.PairData
 import com.example.cryptotracker.domain.model.CryptoCurrency
+import com.example.cryptotracker.domain.model.PortfolioItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -16,7 +19,8 @@ import javax.inject.Singleton
 @Singleton
 class CryptoRepository @Inject constructor(
     private val api: DexScreenerApi,
-    private val favoriteDao: FavoriteDao
+    private val favoriteDao: FavoriteDao,
+    private val holdingDao: HoldingDao
 ) {
 
     suspend fun getPairData(chainId: String, pairAddress: String): Result<CryptoCurrency> =
@@ -123,5 +127,54 @@ class CryptoRepository @Inject constructor(
             url = url,
             imageUrl = info?.imageUrl
         )
+    }
+
+    fun getHoldingsFlow(): Flow<List<HoldingEntity>> = holdingDao.getAllHoldings()
+
+    fun isHolding(pairAddress: String): Flow<Boolean> = holdingDao.isInPortfolio(pairAddress)
+
+    suspend fun addHolding(currency: CryptoCurrency, buyPriceUsd: Double, quantity: Double) {
+        val entity = HoldingEntity(
+            pairAddress = currency.pairAddress,
+            chainId = currency.chainId,
+            dexId = currency.dexId,
+            tokenSymbol = currency.baseTokenSymbol,
+            tokenName = currency.baseTokenName,
+            quoteTokenSymbol = currency.quoteTokenSymbol,
+            buyPriceUsd = buyPriceUsd,
+            quantity = quantity
+        )
+        holdingDao.insertHolding(entity)
+    }
+
+    suspend fun removeHolding(pairAddress: String) {
+        holdingDao.deleteHolding(pairAddress)
+    }
+
+    suspend fun getPortfolioItems(): List<PortfolioItem> = withContext(Dispatchers.IO) {
+        val holdings = holdingDao.getAllHoldingsList()
+        if (holdings.isEmpty()) return@withContext emptyList()
+
+        coroutineScope {
+            holdings.map { holding ->
+                async {
+                    val result = getPairData(holding.chainId, holding.pairAddress)
+                    result.getOrNull()?.let { currency ->
+                        PortfolioItem(
+                            pairAddress = holding.pairAddress,
+                            chainId = holding.chainId,
+                            dexId = holding.dexId,
+                            tokenSymbol = holding.tokenSymbol,
+                            tokenName = holding.tokenName,
+                            quoteTokenSymbol = holding.quoteTokenSymbol,
+                            buyPriceUsd = holding.buyPriceUsd,
+                            quantity = holding.quantity,
+                            currentPriceUsd = currency.priceUsd.toDoubleOrNull() ?: 0.0,
+                            imageUrl = currency.imageUrl
+                        )
+                    }
+                }
+            }.mapNotNull { it.await() }
+        }
     }
 }

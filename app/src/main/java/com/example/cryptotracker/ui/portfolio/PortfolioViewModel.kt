@@ -1,9 +1,9 @@
-package com.example.cryptotracker.ui.favorites
+package com.example.cryptotracker.ui.portfolio
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cryptotracker.data.repository.CryptoRepository
-import com.example.cryptotracker.domain.model.CryptoCurrency
+import com.example.cryptotracker.domain.model.PortfolioItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -14,26 +14,30 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class FavoritesUiState(
+data class PortfolioUiState(
     val isLoading: Boolean = false,
-    val favorites: List<CryptoCurrency> = emptyList(),
+    val items: List<PortfolioItem> = emptyList(),
+    val totalValue: Double = 0.0,
+    val totalCost: Double = 0.0,
+    val totalPnlUsd: Double = 0.0,
+    val totalPnlPercent: Double = 0.0,
     val error: String? = null
 )
 
 @HiltViewModel
-class FavoritesViewModel @Inject constructor(
+class PortfolioViewModel @Inject constructor(
     private val repository: CryptoRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(FavoritesUiState())
-    val uiState: StateFlow<FavoritesUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(PortfolioUiState())
+    val uiState: StateFlow<PortfolioUiState> = _uiState.asStateFlow()
 
     private var autoRefreshJob: Job? = null
     private var observeDbJob: Job? = null
 
     init {
-        observeFavoritesDb()
-        loadFavorites()
+        observeHoldingsDb()
+        loadPortfolio()
     }
 
     fun startAutoRefresh() {
@@ -41,38 +45,53 @@ class FavoritesViewModel @Inject constructor(
         autoRefreshJob = viewModelScope.launch {
             while (true) {
                 delay(30_000)
-                loadFavorites()
+                loadPortfolio()
             }
         }
     }
 
-    private fun observeFavoritesDb() {
+    private fun observeHoldingsDb() {
         observeDbJob?.cancel()
         observeDbJob = viewModelScope.launch {
-            repository.getFavorites()
+            repository.getHoldingsFlow()
                 .distinctUntilChanged { old, new -> old.size == new.size && old.map { it.pairAddress } == new.map { it.pairAddress } }
                 .collect {
-                    loadFavorites()
+                    loadPortfolio()
                 }
         }
     }
 
-    fun loadFavorites() {
+    fun loadPortfolio() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             try {
-                val data = repository.getFavoritePairs()
+                val items = repository.getPortfolioItems()
+                val totalValue = items.sumOf { it.currentValue }
+                val totalCost = items.sumOf { it.totalCost }
+                val totalPnl = totalValue - totalCost
+                val totalPnlPct = if (totalCost > 0) (totalPnl / totalCost) * 100.0 else 0.0
+
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    favorites = data,
+                    items = items,
+                    totalValue = totalValue,
+                    totalCost = totalCost,
+                    totalPnlUsd = totalPnl,
+                    totalPnlPercent = totalPnlPct,
                     error = null
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Failed to load favorites"
+                    error = e.message ?: "Failed to load portfolio"
                 )
             }
+        }
+    }
+
+    fun removeFromPortfolio(pairAddress: String) {
+        viewModelScope.launch {
+            repository.removeHolding(pairAddress)
         }
     }
 }

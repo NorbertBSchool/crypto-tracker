@@ -18,6 +18,7 @@ data class DetailUiState(
     val isLoading: Boolean = false,
     val crypto: CryptoCurrency? = null,
     val isFavorite: Boolean = false,
+    val isInPortfolio: Boolean = false,
     val error: String? = null
 )
 
@@ -38,6 +39,7 @@ class DetailViewModel @Inject constructor(
     init {
         loadDetails()
         observeFavorite()
+        observePortfolio()
     }
 
     fun startAutoRefresh() {
@@ -95,10 +97,31 @@ class DetailViewModel @Inject constructor(
         }
     }
 
+    private fun observePortfolio() {
+        viewModelScope.launch {
+            repository.isHolding(pairAddress).collect { isHolding ->
+                _uiState.value = _uiState.value.copy(isInPortfolio = isHolding)
+            }
+        }
+    }
+
     fun toggleFavorite() {
         val currency = _uiState.value.crypto ?: return
         viewModelScope.launch {
             repository.toggleFavorite(currency)
+        }
+    }
+
+    fun addToPortfolio(buyPriceUsd: Double, quantity: Double) {
+        val currency = _uiState.value.crypto ?: return
+        viewModelScope.launch {
+            repository.addHolding(currency, buyPriceUsd, quantity)
+        }
+    }
+
+    fun removeFromPortfolio() {
+        viewModelScope.launch {
+            repository.removeHolding(pairAddress)
         }
     }
 }
