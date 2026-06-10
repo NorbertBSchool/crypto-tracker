@@ -22,6 +22,7 @@ import com.example.cryptotracker.ui.favorites.FavoritesScreen
 import com.example.cryptotracker.ui.home.HomeScreen
 import com.example.cryptotracker.ui.portfolio.PortfolioScreen
 import com.example.cryptotracker.ui.search.SearchScreen
+import com.example.cryptotracker.ui.settings.SettingsScreen
 
 @Composable
 fun CryptoTrackerNavGraph() {
@@ -66,7 +67,16 @@ fun CryptoTrackerNavGraph() {
                         navController.navigate(
                             Screen.Detail.createRoute(currency.pairAddress, currency.chainId)
                         )
+                    },
+                    onSettingsClick = {
+                        navController.navigate(Screen.Settings.route)
                     }
+                )
+            }
+
+            composable(Screen.Settings.route) {
+                SettingsScreen(
+                    onBackClick = { navController.popBackStack() }
                 )
             }
 

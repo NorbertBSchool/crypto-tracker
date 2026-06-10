@@ -189,6 +189,8 @@ fun DetailScreen(
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     OutlinedButton(
                         onClick = { showAddHoldingSheet = true },
                         modifier = Modifier.fillMaxWidth()

@@ -8,6 +8,7 @@ import com.example.cryptotracker.data.remote.DexScreenerApi
 import com.example.cryptotracker.data.remote.model.PairData
 import com.example.cryptotracker.domain.model.CryptoCurrency
 import com.example.cryptotracker.domain.model.PortfolioItem
+import com.example.cryptotracker.domain.model.TokenBoostItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -106,6 +107,39 @@ class CryptoRepository @Inject constructor(
             }.mapNotNull { it.await() }
         }
     }
+
+    suspend fun getTopBoostedTokens(): List<TokenBoostItem> = coroutineScope {
+        try {
+            val boosts = api.getTokenBoosts().take(10)
+            boosts.map { boost ->
+                async {
+                    try {
+                        val pairs = api.getTokensByAddress(boost.chainId, boost.tokenAddress)
+                        TokenBoostItem(
+                            chainId = boost.chainId,
+                            tokenAddress = boost.tokenAddress,
+                            name = pairs.firstOrNull()?.baseToken?.name,
+                            bannerUrl = boost.header
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+            }.mapNotNull { it.await() }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun resolveBoostedToken(chainId: String, tokenAddress: String): CryptoCurrency? =
+        withContext(Dispatchers.IO) {
+            try {
+                val pairs = api.getTokensByAddress(chainId, tokenAddress)
+                pairs.firstOrNull()?.toCryptoCurrency()
+            } catch (e: Exception) {
+                null
+            }
+        }
 
     private fun PairData.toCryptoCurrency(): CryptoCurrency {
         return CryptoCurrency(

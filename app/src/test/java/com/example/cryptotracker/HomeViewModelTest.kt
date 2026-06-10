@@ -5,6 +5,7 @@ import com.example.cryptotracker.domain.model.CryptoCurrency
 import com.example.cryptotracker.ui.home.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -28,6 +29,7 @@ class HomeViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         repository = mock()
+        runBlocking { whenever(repository.getTopBoostedTokens()).thenReturn(emptyList()) }
     }
 
     @After

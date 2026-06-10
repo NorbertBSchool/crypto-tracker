@@ -15,6 +15,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     data object Detail : Screen("detail/{pairAddress}/{chainId}", "Detail", Icons.Default.Home) {
         fun createRoute(pairAddress: String, chainId: String) = "detail/$pairAddress/$chainId"
     }
+    data object Settings : Screen("settings", "Settings", Icons.Default.Home)
 }
 
 val bottomNavItems = listOf(Screen.Home, Screen.Search, Screen.Portfolio, Screen.Favorites)

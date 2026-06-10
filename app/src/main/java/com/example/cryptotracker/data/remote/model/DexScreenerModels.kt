@@ -58,3 +58,15 @@ data class Social(
     @SerializedName("platform") val platform: String,
     @SerializedName("handle") val handle: String
 )
+
+data class TokenBoostResponse(
+    @SerializedName("url") val url: String?,
+    @SerializedName("chainId") val chainId: String,
+    @SerializedName("tokenAddress") val tokenAddress: String,
+    @SerializedName("amount") val amount: Int,
+    @SerializedName("totalAmount") val totalAmount: Int,
+    @SerializedName("icon") val icon: String?,
+    @SerializedName("header") val header: String?,
+    @SerializedName("description") val description: String?,
+    @SerializedName("links") val links: List<Any>?
+)

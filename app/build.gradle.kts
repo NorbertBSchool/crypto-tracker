@@ -86,6 +86,9 @@ dependencies {
     // WebView
     implementation(libs.androidx.webkit)
 
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
+
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
